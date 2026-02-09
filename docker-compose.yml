@@ -1,0 +1,119 @@
+services:
+  # ============================================================================
+  # API - Cloudflare Workers (via Wrangler local mode)
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - '8787:8787'
+    volumes:
+      - api-data:/app/apps/api/.wrangler
+      - ./apps/api/src:/app/apps/api/src:ro
+    environment:
+      - API_URL=http://localhost:8787
+      - WEB_URL=http://localhost:3000
+      - MOBILE_SCHEME=agentap
+      # Auth secret for local development (use secure value in production)
+      - AUTH_SECRET=local-dev-secret-key-must-be-at-least-32-chars
+      # OAuth placeholders (optional for local dev with email/password)
+      - GITHUB_CLIENT_ID=not-configured
+      - GITHUB_CLIENT_SECRET=not-configured
+      - GOOGLE_CLIENT_ID=not-configured
+      - GOOGLE_CLIENT_SECRET=not-configured
+      - APPLE_CLIENT_ID=not-configured
+      - APPLE_CLIENT_SECRET=not-configured
+      # Cloudflare tunnel management (optional for local dev)
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:-}
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN:-}
+      - CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID:-}
+      - TUNNEL_DOMAIN=${TUNNEL_DOMAIN:-tunnel.agentap.dev}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8787/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - agentap
+
+  # ============================================================================
+  # Daemon - runs natively (pnpm dev:daemon) for reliable FS event detection
+  # ============================================================================
+
+  # ============================================================================
+  # Website - Next.js Marketing Site
+  # ============================================================================
+  website:
+    build:
+      context: .
+      dockerfile: docker/website.Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      # Mount source for hot reload
+      - ./apps/website/src:/app/apps/website/src:ro
+      - ./apps/website/public:/app/apps/website/public:ro
+      - ./packages/shared/src:/app/packages/shared/src:ro
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8787
+      - NEXT_PUBLIC_WS_URL=ws://localhost:9876
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - api
+    networks:
+      - agentap
+
+  # ============================================================================
+  # Portal - Next.js Dashboard
+  # ============================================================================
+  portal:
+    build:
+      context: .
+      dockerfile: docker/portal.Dockerfile
+    ports:
+      - '3001:3001'
+    volumes:
+      # Mount source for hot reload
+      - ./apps/portal/src:/app/apps/portal/src:ro
+      - ./apps/portal/public:/app/apps/portal/public:ro
+      - ./packages/shared/src:/app/packages/shared/src:ro
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8787
+      - NEXT_PUBLIC_WS_URL=ws://localhost:9876
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - api
+    networks:
+      - agentap
+
+  # ============================================================================
+  # Integration Tests - Playwright
+  # ============================================================================
+  tests:
+    build:
+      context: .
+      dockerfile: docker/tests.Dockerfile
+    volumes:
+      - ./playwright-report:/app/tests/playwright-report
+      - ./test-results:/app/tests/test-results
+    environment:
+      - API_URL=http://api:8787
+      - WEB_URL=http://website:3000
+      - DAEMON_URL=http://daemon:9876
+      - CI=true
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles:
+      - test
+    networks:
+      - agentap
+
+volumes:
+  api-data:
+
+networks:
+  agentap:
+    name: agentap-network

@@ -1,0 +1,8 @@
+# Format staged files with prettier
+pnpm lint-staged
+
+# Lint all packages (each package's lint script via turbo)
+pnpm lint
+
+# Typecheck all packages
+pnpm typecheck

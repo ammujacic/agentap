@@ -1,0 +1,35 @@
+{
+  "name": "@agentap-dev/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agentap API - Cloudflare Workers backend",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --env=\"\"",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "wrangler d1 migrations create agentap-db",
+    "db:migrate:local": "wrangler d1 migrations apply agentap-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply agentap-db --remote"
+  },
+  "dependencies": {
+    "@agentap-dev/shared": "workspace:*",
+    "better-auth": "^1.4.18",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.8",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260206.0",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^4.0.18",
+    "wrangler": "^4.63.0"
+  }
+}

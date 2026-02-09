@@ -1,0 +1,32 @@
+name = "agentap-api"
+main = "src/index.ts"
+compatibility_date = "2024-02-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Development
+[vars]
+API_URL = "http://localhost:8787"
+WEB_URL = "http://localhost:3000"
+MOBILE_SCHEME = "agentap"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "agentap-db"
+database_id = "2356e93c-37d2-47e1-beb3-4c8cde2b2dec"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "SESSION_KV"
+id = "11b8833f65a64b2d8bce9e881ec24fc3"
+
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "6f2444a854204fdfbf3ac19eeda691cf"
+
+# Environment-specific configuration
+[env.production]
+vars = { API_URL = "https://api.agentap.dev", WEB_URL = "https://app.agentap.dev" }
+routes = [
+  { pattern = "api.agentap.dev", custom_domain = true }
+]

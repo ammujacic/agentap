@@ -1,0 +1,10 @@
+{
+  "name": "agentap",
+  "version": "0.1.0",
+  "description": "Mobile approval bridge — route tool approvals to your phone via Agentap",
+  "author": {
+    "name": "Agentap",
+    "url": "https://agentap.dev"
+  },
+  "hooks": "./hooks/hooks.json"
+}

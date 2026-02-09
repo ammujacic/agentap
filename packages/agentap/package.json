@@ -1,0 +1,30 @@
+{
+  "name": "agentap",
+  "version": "0.1.0",
+  "description": "Mobile bridge for AI coding agents - control your agents from anywhere",
+  "bin": {
+    "agentap": "./bin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentap-dev/agentap.git"
+  },
+  "homepage": "https://agentap.dev",
+  "bugs": {
+    "url": "https://github.com/agentap-dev/agentap/issues"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "claude",
+    "claude-code",
+    "mobile",
+    "cli",
+    "coding-assistant"
+  ],
+  "author": "Amir Mujacic <amir@agentap.dev>",
+  "license": "MIT",
+  "dependencies": {
+    "@agentap-dev/cli": "workspace:*"
+  }
+}

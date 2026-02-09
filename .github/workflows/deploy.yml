@@ -1,0 +1,239 @@
+name: Deploy to Cloudflare
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_api:
+        description: 'Deploy API (Workers)'
+        required: true
+        default: true
+        type: boolean
+      deploy_website:
+        description: 'Deploy Website (Pages)'
+        required: true
+        default: true
+        type: boolean
+      deploy_portal:
+        description: 'Deploy Portal (Pages)'
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  # ============================================================================
+  # Build All Apps
+  # ============================================================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Upload API build
+        if: ${{ github.event.inputs.deploy_api == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-build
+          path: apps/api/
+          retention-days: 1
+
+      - name: Upload Website build
+        if: ${{ github.event.inputs.deploy_website == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-build
+          path: apps/website/.next/
+          retention-days: 1
+
+      - name: Upload Portal build
+        if: ${{ github.event.inputs.deploy_portal == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-build
+          path: apps/portal/.next/
+          retention-days: 1
+
+  # ============================================================================
+  # Deploy API to Cloudflare Workers
+  # ============================================================================
+  deploy-api:
+    name: Deploy API (Workers)
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event.inputs.deploy_api == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Cloudflare Workers
+        working-directory: apps/api
+        run: pnpm wrangler deploy --env production
+
+      - name: Deployment Summary
+        run: |
+          echo "## API Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://api.agentap.dev" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Deploy Website to Cloudflare Pages
+  # ============================================================================
+  deploy-website:
+    name: Deploy Website (Pages)
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event.inputs.deploy_website == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Website build
+        uses: actions/download-artifact@v4
+        with:
+          name: website-build
+          path: apps/website/.next/
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: apps/website
+        run: pnpm wrangler pages deploy .next --project-name=agentap-website --branch=main
+
+      - name: Deployment Summary
+        run: |
+          echo "## Website Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project:** agentap-website" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Deploy Portal to Cloudflare Pages
+  # ============================================================================
+  deploy-portal:
+    name: Deploy Portal (Pages)
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event.inputs.deploy_portal == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Portal build
+        uses: actions/download-artifact@v4
+        with:
+          name: portal-build
+          path: apps/portal/.next/
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: apps/portal
+        run: pnpm wrangler pages deploy .next --project-name=agentap-portal --branch=main
+
+      - name: Deployment Summary
+        run: |
+          echo "## Portal Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project:** agentap-portal" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Run Database Migrations
+  # ============================================================================
+  migrate-database:
+    name: Run D1 Migrations
+    runs-on: ubuntu-latest
+    needs: deploy-api
+    if: ${{ github.event.inputs.deploy_api == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run D1 Migrations
+        working-directory: apps/api
+        run: pnpm db:migrate:prod
+
+      - name: Migration Summary
+        run: |
+          echo "## Database Migrations Complete :white_check_mark:" >> $GITHUB_STEP_SUMMARY

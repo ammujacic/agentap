@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Logo gradient colors - cyan to blue to purple */
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-purple-400: #c084fc;
+  --color-purple-500: #a855f7;
+
+  /* Dark theme grays */
+  --color-gray-950: #030712;
+  --color-gray-900: #0a0f1a;
+  --color-gray-800: #111827;
+  --color-gray-700: #1f2937;
+  --color-gray-600: #374151;
+  --color-gray-500: #6b7280;
+  --color-gray-400: #9ca3af;
+  --color-gray-300: #d1d5db;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-gray-950);
+  color: var(--color-gray-300);
+}
+
+/* Logo gradient for text */
+@utility gradient-text {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: white;
+}
+
+/* Custom checkbox styling */
+input[type='checkbox'] {
+  accent-color: #3b82f6;
+}

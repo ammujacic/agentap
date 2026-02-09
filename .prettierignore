@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Cloudflare
+.wrangler/
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Auto-generated
+*.min.js
+*.min.css
+coverage/
+
+# Expo/React Native
+packages/mobile/.expo/
+packages/mobile/ios/
+packages/mobile/android/
