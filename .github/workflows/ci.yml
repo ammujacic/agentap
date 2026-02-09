@@ -132,7 +132,7 @@ jobs:
 
       - name: Build and start services
         run: |
-          docker compose up -d api daemon
+          docker compose up -d api
           # Wait for API to be healthy
           timeout 60 bash -c 'until curl -s http://localhost:8787/health; do sleep 2; done'
 

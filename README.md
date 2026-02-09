@@ -87,21 +87,20 @@ agentap/
 
 ## Docker Commands
 
-| Command                  | Description                                       |
-| ------------------------ | ------------------------------------------------- |
-| `pnpm docker:up`         | Start all services (API, daemon, website, portal) |
-| `pnpm docker:up:backend` | Start only API + daemon                           |
-| `pnpm docker:down`       | Stop all containers                               |
-| `pnpm docker:logs`       | View container logs                               |
-| `pnpm docker:reset`      | Reset containers and database                     |
-| `pnpm docker:build`      | Rebuild images                                    |
+| Command                  | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `pnpm docker:up`         | Start all Docker services (API, website, portal) |
+| `pnpm docker:up:backend` | Start only API                                   |
+| `pnpm docker:down`       | Stop all containers                              |
+| `pnpm docker:logs`       | View container logs                              |
+| `pnpm docker:reset`      | Reset containers and database                    |
+| `pnpm docker:build`      | Rebuild images                                   |
 
 ### Service URLs
 
 | Service | URL                   |
 | ------- | --------------------- |
 | API     | http://localhost:8787 |
-| Daemon  | ws://localhost:9876   |
 | Website | http://localhost:3000 |
 | Portal  | http://localhost:3001 |
 
